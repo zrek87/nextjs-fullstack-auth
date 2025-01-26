@@ -57,9 +57,11 @@ export const sendEmail = async ({
         emailType === "VERIFY" ? "verifyemail" : "resetpassword"
       }?token=${hashedToken}">here</a> to ${
         emailType === "VERIFY" ? "verify your email" : "reset your password"
-      }or copy and paste the link in your browser. <br> ${
-        process.env.domain
-      }/verifyemail?token=${hashedToken}</p>`,
+      } or copy and paste the link in your browser. <br> ${
+        process.env.DOMAIN
+      }/${
+        emailType === "VERIFY" ? "verifyemail" : "resetpassword"
+      }?token=${hashedToken}</p>`,
     };
 
     console.log("Mail options:", mailOptions);
@@ -68,8 +70,11 @@ export const sendEmail = async ({
     const mailResponse = await transport.sendMail(mailOptions);
     console.log(`Email sent successfully to ${email}:`, mailResponse);
     return mailResponse;
-  } catch (error: any) {
-    console.error("Failed to send email:", error.message);
-    throw new Error(`Email failed: ${error.message}`);
+  } catch (error: unknown) {
+    console.error("Failed to send email:", error);
+    if (error instanceof Error) {
+      throw new Error(`Email failed: ${error.message}`);
+    }
+    throw new Error("Email failed: An unknown error occurred");
   }
 };

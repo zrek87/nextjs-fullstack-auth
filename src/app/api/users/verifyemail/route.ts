@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Compare the token
+    // Compare the token (optional, depending on your implementation)
     const isTokenValid = await bcryptjs.compare(token, user.verifyToken);
-    if (token !== user.verifyToken) {
+    if (!isTokenValid) {
       return NextResponse.json(
         { error: "Invalid or expired token" },
         { status: 400 }
@@ -50,8 +50,14 @@ export async function POST(request: NextRequest) {
       message: "Email verified successfully",
       success: true,
     });
-  } catch (error: any) {
-    console.error("Error verifying email:", error.message);
+  } catch (error: unknown) {
+    console.error("Error verifying email:", error);
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || "An unexpected error occurred" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }

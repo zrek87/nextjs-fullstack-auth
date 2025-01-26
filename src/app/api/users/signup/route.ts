@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         userId: savedUser._id,
       });
       console.log("Verification email sent successfully.");
-    } catch (emailError) {
+    } catch (emailError: unknown) {
       console.error("Failed to send verification email. Error:", emailError);
       return NextResponse.json(
         { message: "User created, but verification email could not be sent" },
@@ -84,8 +84,14 @@ export async function POST(request: NextRequest) {
       message: "User created successfully",
       success: true,
     });
-  } catch (error: any) {
-    console.error("Signup error:", error.message);
+  } catch (error: unknown) {
+    console.error("Signup error:", error);
+    if (error instanceof Error) {
+      return NextResponse.json(
+        { error: error.message || "An unexpected error occurred" },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
       { error: "An unexpected error occurred" },
       { status: 500 }

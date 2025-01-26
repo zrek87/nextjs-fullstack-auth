@@ -7,13 +7,13 @@ import toast from "react-hot-toast";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [user, setUser] = React.useState({
+  const [user, setUser] = useState({
     email: "",
     password: "",
     username: "",
   });
-  const [buttonDisabled, setButtonDisabled] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onSignup = async () => {
     try {
@@ -23,11 +23,19 @@ export default function SignupPage() {
       console.log("Signup success", response.data);
       toast.success("Signup successful!");
       router.push("/login");
-    } catch (error: any) {
-      console.error("Signup failed", error.response?.data || error.message);
-      toast.error(
-        error.response?.data?.error || "Signup failed. Please try again."
-      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Signup failed", error.response?.data || error.message);
+        toast.error(
+          error.response?.data?.error || "Signup failed. Please try again."
+        );
+      } else if (error instanceof Error) {
+        console.error("Signup failed", error.message);
+        toast.error(error.message);
+      } else {
+        console.error("Signup failed", "An unknown error occurred");
+        toast.error("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }

@@ -1,30 +1,60 @@
 "use client";
+
+import React from "react";
 import axios from "axios";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { set } from "mongoose";
 
-export default function UserProfile({ params }: any) {
+export default function UserProfile({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
-  const [data, setData] = useState("nothing");
+  const [data, setData] = React.useState<string>("nothing");
+
   const logout = async () => {
     try {
       await axios.get("/api/users/logout");
       toast.success("Logged out successfully");
       router.push("/login");
-    } catch (error: any) {
-      console.error(error);
-      toast.error("An error occurred while logging out", error.maessage);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        toast.error(error.message);
+      } else {
+        console.error("An unknown error occurred");
+        toast.error("An unknown error occurred");
+      }
     }
   };
 
   const getUserDetails = async () => {
-    const res = await axios.get("/api/users/me");
-    console.log(res.data);
-    setData(res.data.data._id);
+    try {
+      const res = await axios.get("/api/users/me");
+      console.log(res.data);
+      setData(res.data.data._id);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        toast.error(error.message);
+      } else {
+        console.error("An unknown error occurred");
+        toast.error("An unknown error occurred");
+      }
+    }
   };
+
+  const resolveParams = async () => {
+    const resolvedParams = await params; // Await the `params` Promise
+    console.log(resolvedParams.id); // Use the `id` from params
+    return resolvedParams.id;
+  };
+
+  React.useEffect(() => {
+    resolveParams();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">

@@ -1,18 +1,17 @@
 "use client";
-import Link from "next/link";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [user, setUser] = React.useState({
+  const [user, setUser] = useState({
     email: "",
     password: "",
   });
-  const [buttonDisabled, setButtonDisabled] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(true); // Add this state
 
   const onLogin = async () => {
     try {
@@ -21,20 +20,23 @@ export default function LoginPage() {
       console.log("Login success", response.data);
       toast.success("Login success");
       router.push("/profile");
-    } catch (error: any) {
-      console.log("Login failed", error.message);
-      toast.error("Login failed");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.log("Login failed", error.message);
+        toast.error(error.message);
+      } else {
+        console.log("Login failed", "An unknown error occurred");
+        toast.error("An unknown error occurred");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user.email.length > 0 && user.password.length > 0) {
-      setButtonDisabled(false);
-    } else {
-      setButtonDisabled(true);
-    }
+    // Enable/disable the login button based on input fields
+    const isFormValid = user.email.length > 0 && user.password.length > 0;
+    setButtonDisabled(!isFormValid); // Update buttonDisabled state
   }, [user]);
 
   return (
@@ -80,12 +82,15 @@ export default function LoginPage() {
         </div>
         <button
           onClick={onLogin}
-          className="w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300"
+          disabled={buttonDisabled || loading} // Disable button if form is invalid or loading
+          className={`w-full bg-indigo-500 text-white py-2 rounded-lg hover:bg-indigo-600 transition duration-300 ${
+            buttonDisabled || loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          Login
+          {loading ? "Logging in..." : "Login"}
         </button>
         <p className="text-center text-sm text-gray-600 mt-4">
-          Dont have an account?
+          Don&apos;t have an account?{" "}
           <a href="/signup" className="text-indigo-500 hover:underline">
             Sign up
           </a>
